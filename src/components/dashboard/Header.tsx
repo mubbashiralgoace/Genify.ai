@@ -20,8 +20,8 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const pageTitles: Record<string, string> = {
-  "/dashboard": "Overview",
-  "/dashboard/generate": "AI Generator",
+  "/dashboard": "Stable Diffusion API",
+  "/dashboard/generate": "LongCat API",
   "/dashboard/editor": "Image Editor",
 };
 

@@ -15,19 +15,18 @@ import { useState, useEffect } from "react";
 const navItems = [
   {
     href: "/dashboard",
-    label: "Dashboard",
+    label: "Stable diffusion",
     icon: LayoutDashboard,
   },
   {
     href: "/dashboard/generate",
-    label: "AI Generator",
+    label: "LongCat",
     icon: Sparkles,
   },
   {
     href: "/dashboard/flux",
-    label: "Free AI",
+    label: "Flux ai",
     icon: Zap,
-    badge: "NEW",
   },
   {
     href: "/dashboard/editor",
@@ -91,11 +90,6 @@ export function Sidebar() {
               >
                 <Icon className="mr-2 h-4 w-4 flex-shrink-0" />
                 <span className="flex-1">{item.label}</span>
-                {item.badge && (
-                  <span className="ml-2 px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full">
-                    {item.badge}
-                  </span>
-                )}
               </Link>
             );
           })}

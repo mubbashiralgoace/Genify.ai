@@ -10,7 +10,6 @@ import {Badge} from "@/components/ui/badge";
 import {
   Sparkles,
   Download,
-  Save,
   Zap,
   Clock,
   Star,
@@ -59,7 +58,7 @@ export default function FluxPage() {
     setIsGenerating(true);
 
     try {
-      // Using Together AI's free Flux API
+      // Using multi-source AI API
       const response = await fetch("/api/flux-generate", {
         method: "POST",
         headers: {
@@ -85,14 +84,15 @@ export default function FluxPage() {
           url: data.imageUrl,
           prompt: prompt.trim(),
           createdAt: new Date().toISOString(),
-          model: selectedModel,
+          model: data.model || selectedModel,
         };
 
+        // Save to localStorage
         const updatedImages = [newImage, ...generatedImages];
         setGeneratedImages(updatedImages);
         saveToStorage(updatedImages);
         
-        console.log("✅ Flux image generated successfully");
+        console.log("✅ Flux image generated and automatically saved to database");
       } else {
         throw new Error("No image URL received");
       }
@@ -120,32 +120,6 @@ export default function FluxPage() {
       console.log("✅ Image downloaded");
     } catch (error) {
       console.error("❌ Download failed:", error);
-    }
-  };
-
-  // Save to database
-  const saveToDatabase = async (image: GeneratedImage) => {
-    try {
-      const response = await fetch(image.url);
-      const blob = await response.blob();
-      
-      const formData = new FormData();
-      formData.append("image", blob, `flux-${image.id}.png`);
-      formData.append("prompt", `[Flux AI] ${image.prompt}`);
-
-      const saveResponse = await fetch("/api/upload-image", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (saveResponse.ok) {
-        alert("✅ Image saved to gallery!");
-      } else {
-        alert("❌ Failed to save image");
-      }
-    } catch (error) {
-      console.error("❌ Save failed:", error);
-      alert("❌ Failed to save image");
     }
   };
 
@@ -187,15 +161,15 @@ export default function FluxPage() {
             Free AI Generator
           </h1>
           <p className="text-purple-100 max-w-2xl text-lg leading-relaxed mb-6">
-            Multi-source AI image generation with automatic fallbacks. Tries Hugging Face first, 
-            then falls back to completely free alternatives - always generates something!
+            Multi-source AI image generation with automatic fallbacks and auto-save to gallery. 
+            Tries Hugging Face always generates something!
           </p>
 
           {/* Features Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
             <div className="flex items-center gap-2 text-sm text-green-200 bg-green-500/10 rounded-lg p-3">
               <CheckCircle className="h-4 w-4 text-green-400" />
-              <span>Always Works</span>
+              <span>Auto-Save</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-blue-200 bg-blue-500/10 rounded-lg p-3">
               <Zap className="h-4 w-4 text-blue-400" />
@@ -224,20 +198,7 @@ export default function FluxPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Model Selection */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">AI Sources (Auto-Fallback)</Label>
-                <div className="grid grid-cols-1 gap-2">
-                  <div className="p-3 rounded-xl border-2 border-purple-500 bg-purple-50 text-left">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Rocket className="h-4 w-4 text-purple-600" />
-                      <span className="font-medium">Smart Multi-Source</span>
-                      <Badge variant="secondary" className="text-xs">RELIABLE</Badge>
-                    </div>
-                    <p className="text-xs text-slate-600">Hugging Face → LimeWire AI → Replicate → Styled Placeholder</p>
-                  </div>
-                </div>
-              </div>
+        
 
               {/* Prompt Input */}
               <div className="space-y-3">
@@ -352,13 +313,6 @@ export default function FluxPage() {
                             className="bg-white/90 hover:bg-white text-slate-700 shadow-lg"
                           >
                             <Download className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => saveToDatabase(image)}
-                            className="bg-white/90 hover:bg-white text-slate-700 shadow-lg"
-                          >
-                            <Save className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>

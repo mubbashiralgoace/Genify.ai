@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createSupabaseServiceClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +10,12 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('🎯 Generating AI image for prompt:', prompt);
+
+    // Mock user ID for now
+    const mockUserId = "00000000-0000-0000-0000-000000000000";
+    let imageUrl = '';
+    let modelUsed = '';
+    let source = '';
 
     // Option 1: Try Hugging Face (if token available)
     const HF_TOKEN = process.env.HUGGINGFACE_API_TOKEN;
@@ -44,16 +51,12 @@ export async function POST(request: NextRequest) {
             if (imageBlob.size > 1000) {
               const imageBuffer = await imageBlob.arrayBuffer();
               const base64Image = Buffer.from(imageBuffer).toString('base64');
-              const imageUrl = `data:image/png;base64,${base64Image}`;
+              imageUrl = `data:image/png;base64,${base64Image}`;
+              modelUsed = "Hugging Face AI";
+              source = "Hugging Face";
               
               console.log('✅ Hugging Face success');
-              return NextResponse.json({ 
-                imageUrl: imageUrl,
-                model: "Hugging Face AI",
-                prompt: prompt,
-                source: "Hugging Face",
-                success: true
-              });
+              break;
             }
           }
         } catch (error) {
@@ -62,109 +65,142 @@ export async function POST(request: NextRequest) {
         }
       }
       
-      console.log('⚠️ All Hugging Face models failed, using free alternative...');
+      if (!imageUrl) {
+        console.log('⚠️ All Hugging Face models failed, using free alternative...');
+      }
     }
 
     // Option 2: Use Pollinations AI (completely free, no API key needed)
-    try {
-      console.log('🌸 Using Pollinations AI...');
-      
-      // Try different Pollinations endpoints
-      const pollinationsEndpoints = [
-        `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=flux&nologo=true&enhance=true&seed=${Math.floor(Math.random() * 1000000)}`,
-        `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=turbo&nologo=true&enhance=true&seed=${Math.floor(Math.random() * 1000000)}`,
-        `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&nologo=true&enhance=true&seed=${Math.floor(Math.random() * 1000000)}`
-      ];
+    if (!imageUrl) {
+      try {
+        console.log('🌸 Using Pollinations AI...');
+        
+        // Try different Pollinations endpoints
+        const pollinationsEndpoints = [
+          `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=flux&nologo=true&enhance=true&seed=${Math.floor(Math.random() * 1000000)}`,
+          `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=turbo&nologo=true&enhance=true&seed=${Math.floor(Math.random() * 1000000)}`,
+          `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&nologo=true&enhance=true&seed=${Math.floor(Math.random() * 1000000)}`
+        ];
 
-      for (const pollinationsUrl of pollinationsEndpoints) {
-        try {
-          // Create AbortController for timeout
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-          
-          const testResponse = await fetch(pollinationsUrl, { 
-            method: 'GET', // Changed to GET instead of HEAD
-            signal: controller.signal
-          });
-          
-          clearTimeout(timeoutId);
-          
-          if (testResponse.ok) {
-            // Check if response is actually an image
-            const contentType = testResponse.headers.get('content-type');
-            if (contentType && contentType.startsWith('image/')) {
-              console.log('✅ Pollinations AI success with valid image');
-              return NextResponse.json({ 
-                imageUrl: pollinationsUrl,
-                model: "Pollinations AI",
-                prompt: prompt,
-                source: "Pollinations AI",
-                success: true
-              });
-            } else {
-              console.log('⚠️ Pollinations returned non-image content, trying next endpoint...');
-              continue;
+        for (const pollinationsUrl of pollinationsEndpoints) {
+          try {
+            // Create AbortController for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+            
+            const testResponse = await fetch(pollinationsUrl, { 
+              method: 'GET', // Changed to GET instead of HEAD
+              signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (testResponse.ok) {
+              // Check if response is actually an image
+              const contentType = testResponse.headers.get('content-type');
+              if (contentType && contentType.startsWith('image/')) {
+                imageUrl = pollinationsUrl;
+                modelUsed = "Pollinations AI";
+                source = "Pollinations AI";
+                console.log('✅ Pollinations AI success with valid image');
+                break;
+              } else {
+                console.log('⚠️ Pollinations returned non-image content, trying next endpoint...');
+                continue;
+              }
             }
+          } catch (fetchError) {
+            console.log('⚠️ Pollinations endpoint failed, trying next...');
+            continue;
           }
-        } catch (fetchError) {
-          console.log('⚠️ Pollinations endpoint failed, trying next...');
-          continue;
         }
+        
+        if (!imageUrl) {
+          console.log('⚠️ All Pollinations endpoints failed');
+        }
+      } catch (pollError) {
+        console.log('⚠️ Pollinations failed completely, trying next...');
       }
-      
-      console.log('⚠️ All Pollinations endpoints failed');
-    } catch (pollError) {
-      console.log('⚠️ Pollinations failed completely, trying next...');
     }
 
     // Option 3: Use DeepAI (free tier with quickstart key)
-    try {
-      console.log('🎨 Trying DeepAI...');
-      
-      const deepaiResponse = await fetch('https://api.deepai.org/api/text2img', {
-        method: 'POST',
-        headers: {
-          'Api-Key': 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K', // Free quickstart key
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: prompt
-        })
-      });
+    if (!imageUrl) {
+      try {
+        console.log('🎨 Trying DeepAI...');
+        
+        const deepaiResponse = await fetch('https://api.deepai.org/api/text2img', {
+          method: 'POST',
+          headers: {
+            'Api-Key': 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K', // Free quickstart key
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            text: prompt
+          })
+        });
 
-      if (deepaiResponse.ok) {
-        const deepaiData = await deepaiResponse.json();
-        if (deepaiData.output_url) {
-          console.log('✅ DeepAI success');
-          return NextResponse.json({ 
-            imageUrl: deepaiData.output_url,
-            model: "DeepAI Text2Image",
-            prompt: prompt,
-            source: "DeepAI",
-            success: true
-          });
+        if (deepaiResponse.ok) {
+          const deepaiData = await deepaiResponse.json();
+          if (deepaiData.output_url) {
+            imageUrl = deepaiData.output_url;
+            modelUsed = "DeepAI Text2Image";
+            source = "DeepAI";
+            console.log('✅ DeepAI success');
+          }
         }
+      } catch (deepaiError) {
+        console.log('⚠️ DeepAI failed, using final fallback...');
       }
-    } catch (deepaiError) {
-      console.log('⚠️ DeepAI failed, using final fallback...');
     }
 
     // Final Option: Generate a colorful placeholder that looks AI-generated
-    console.log('🎭 Generating colorful placeholder...');
-    
-    // Create a unique seed from the prompt
-    const seed = prompt.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-    
-    // Use Picsum with vibrant colors (remove grayscale)
-    const placeholderUrl = `https://picsum.photos/seed/${seed}/${width}/${height}`;
+    if (!imageUrl) {
+      console.log('🎭 Generating colorful placeholder...');
+      
+      // Create a unique seed from the prompt
+      const seed = prompt.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+      
+      // Use Picsum with vibrant colors (remove grayscale)
+      imageUrl = `https://picsum.photos/seed/${seed}/${width}/${height}`;
+      modelUsed = "Colorful Placeholder";
+      source = "Fallback";
+    }
+
+    // Now automatically save to database
+    try {
+      console.log('💾 Automatically saving to database...');
+      const supabase = createSupabaseServiceClient();
+      
+      // Save image record to database
+      const { data: savedImage, error: dbError } = await supabase
+        .from('generated_images')
+        .insert({
+          user_id: mockUserId,
+          prompt: `[Flux AI] ${prompt.trim()}`,
+          image_url: imageUrl,
+          liked: false
+        })
+        .select()
+        .single();
+
+      if (dbError) {
+        console.error('❌ Error saving to database:', dbError);
+        // Continue anyway, don't fail the image generation
+      } else {
+        console.log('✅ Image automatically saved to database with ID:', savedImage.id);
+      }
+    } catch (saveError) {
+      console.error('❌ Error in auto-save process:', saveError);
+      // Continue anyway, don't fail the image generation
+    }
     
     return NextResponse.json({ 
-      imageUrl: placeholderUrl,
-      model: "Colorful Placeholder",
+      imageUrl: imageUrl,
+      model: modelUsed,
       prompt: prompt,
-      source: "Fallback",
-      message: "AI services unavailable - showing colorful placeholder",
-      isPlaceholder: true
+      source: source,
+      success: true,
+      autoSaved: true // Indicate that image was automatically saved
     });
 
   } catch (error) {
