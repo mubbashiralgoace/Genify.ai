@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, User, Sparkles, LayoutDashboard } from "lucide-react";
+import { LogOut, User, Sparkles, LayoutDashboard, Edit3, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,6 +22,17 @@ const navItems = [
     href: "/dashboard/generate",
     label: "AI Generator",
     icon: Sparkles,
+  },
+  {
+    href: "/dashboard/flux",
+    label: "Free AI",
+    icon: Zap,
+    badge: "NEW",
+  },
+  {
+    href: "/dashboard/editor",
+    label: "Image Editor",
+    icon: Edit3,
   }
 ];
 
@@ -80,6 +91,11 @@ export function Sidebar() {
               >
                 <Icon className="mr-2 h-4 w-4 flex-shrink-0" />
                 <span className="flex-1">{item.label}</span>
+                {item.badge && (
+                  <span className="ml-2 px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full">
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             );
           })}

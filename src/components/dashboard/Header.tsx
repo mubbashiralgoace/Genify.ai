@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { Menu, LogOut, User, Sparkles, LayoutDashboard } from "lucide-react";
+import { Menu, LogOut, User, Sparkles, LayoutDashboard, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 const pageTitles: Record<string, string> = {
   "/dashboard": "Overview",
   "/dashboard/generate": "AI Generator",
+  "/dashboard/editor": "Image Editor",
 };
 
 const navItems = [
@@ -34,6 +35,11 @@ const navItems = [
     href: "/dashboard/generate",
     label: "AI Generator",
     icon: Sparkles,
+  },
+  {
+    href: "/dashboard/editor",
+    label: "Image Editor",
+    icon: Edit3,
   },
 ];
 

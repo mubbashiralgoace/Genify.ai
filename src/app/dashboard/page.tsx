@@ -465,7 +465,11 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-2 text-sm text-indigo-200">
               <Zap className="h-4 w-4 text-yellow-400" />
-              <span>High-Speed Generation</span>
+              <span>Stable Diffusion XL</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-indigo-200">
+              <Layers className="h-4 w-4 text-blue-400" />
+              <span>100K generations/day</span>
             </div>
           </div>
         </div>
@@ -523,7 +527,7 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-cyan-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <CardHeader className="flex flex-row items-center justify-between pb-3 relative z-10">
             <CardTitle className="text-sm font-semibold text-slate-700 group-hover:text-blue-700 transition-colors">
-              AI Models
+              Stable Diffusion XL
             </CardTitle>
             <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
               <Layers className="h-6 w-6 text-white" />
@@ -531,12 +535,12 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="relative z-10">
             <div className="text-4xl font-bold text-slate-900 mb-2 group-hover:text-blue-900 transition-colors">
-              1
+              100K
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
                 <Brush className="h-3 w-3" />
-                <span>Stable Diffusion XL</span>
+                <span>Per day limit</span>
               </div>
             </div>
           </CardContent>
@@ -563,7 +567,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
                 <Camera className="h-3 w-3" />
-                <span>Recent images</span>
+                <span>Generated this month</span>
               </div>
             </div>
           </CardContent>
@@ -629,7 +633,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
                     <Sparkles className="h-3 w-3" />
-                    <span>Powered by Stable Diffusion XL - Advanced AI model for high-quality images</span>
+                    <span>Powered by Stable Diffusion XL - 100,000 generations per day</span>
                   </div>
                 </div>
 

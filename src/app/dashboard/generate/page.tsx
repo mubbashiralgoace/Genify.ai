@@ -216,6 +216,10 @@ export default function GeneratePage() {
                     className="min-h-[100px] resize-none border-2 focus:border-purple-400 rounded-xl"
                   />
                   <div className="text-xs text-slate-500">{prompt.length}/500</div>
+                  <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                    <Sparkles className="h-3 w-3" />
+                    <span>LongCat API - 100 generations per day</span>
+                  </div>
                 </div>
 
                 {/* Generate Button */}
@@ -393,14 +397,14 @@ export default function GeneratePage() {
                         >
                           <Download className="h-4 w-4" />
                         </Button>
-                        <Button
+                        {/* <Button
                           size="sm"
                           variant="secondary"
                           className="bg-white/90 hover:bg-white backdrop-blur-sm"
                           onClick={() => copyPrompt(generatedImage.prompt)}
                         >
                           <Copy className="h-4 w-4" />
-                        </Button>
+                        </Button> */}
                       </div>
                     </>
                   )}
